@@ -383,4 +383,4 @@ To be honest, it's more like a experimental module for `TransformStream` 🤔. J
 </div>
 
 ### License
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/tashimato/Torn/blob/main/LICENSE)
