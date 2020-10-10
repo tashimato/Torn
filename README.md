@@ -1,6 +1,6 @@
 <div align="center" style="margin-top:10px">
 <h1 style="color:#F0DB4F" align="center">Torn.js</h1>
-Torn is an <u>experimental</u> module for working with Streams in web browsers
+Torn is a <u>experimental</u> module for working with Streams in web browsers
 </div>
 
 
@@ -217,6 +217,135 @@ async function main() {
 main()
 ```
 
+### MapStream
+It's kinda like the `Array.prototype.map` but for streams.
+
+#### example 1:
+```javascript
+import { CsvToJson, Logger, MapStream } from './torn.js'
+
+async function main() {
+
+  const url = './data/Tracks.csv'
+  const res = await fetch(url)
+
+  res.body
+    .pipeThrough(new CsvToJson())
+    .pipeThrough(new MapStream(data => data.Name))
+    .pipeTo(new Logger())
+
+}
+
+main().catch(err => {
+  console.log('we go ERROR:', err)
+})
+```
+<img src="https://github.com/tashimato/tf-images/blob/master/torn%20images/MapStream-example1.png?raw=true" width="700">
+
+#### example 2:
+```javascript
+import { CsvToJson, Logger, MapStream } from './torn.js'
+
+async function main() {
+
+  const url = './data/Tracks.csv'
+  const res = await fetch(url)
+
+  res.body
+    .pipeThrough(new CsvToJson())
+    .pipeThrough(new MapStream(({ TrackId, Name, GenreId }) => ({ TrackId, Name, GenreId })))
+    .pipeTo(new Logger())
+
+}
+
+main().catch(err => {
+  console.log('we go ERROR:', err)
+})
+```
+<img src="https://github.com/tashimato/tf-images/blob/master/torn%20images/MapStream-example2.png?raw=true" width="700">
+
+#### example 3:
+```javascript
+import { CsvToJson, Logger } from './torn.js'
+
+async function main () {
+  // 11 MB csv data
+  const url = 'https://www.stats.govt.nz/assets/Uploads/Business-price-indexes/Business-price-indexes-June-2020-quarter/Download-data/business-price-indexes-june-2020-quarter-csv-corrected.csv'
+  const cors = 'https://cors-anywhere.herokuapp.com/' // solves the cross origin problem
+
+  const res = await fetch(cors + url)
+
+  res.body
+    .pipeThrough(new CsvToJson())
+    .map(obj => {
+      const reg = /^-?\d+\.?\d*$/ // check if value of string is a number
+      Object.entries(obj).forEach(([key, val]) => {
+        if (reg.test(val)) obj[key] = parseFloat(val) //parse string to number
+        else if (val === '') obj[key] = null // replace empty string with null
+      })
+      return obj
+    })
+    .pipeTo(new Logger())
+}
+
+main().catch(err => {
+  console.log('we go ERROR:', err)
+})
+```
+<img src="https://github.com/tashimato/tf-images/blob/master/torn%20images/MapStream-example3.png?raw=true" width="700">
+
+#### `.map` on `.pipeThrough()` ???
+I didn't like the `pipeThrough(new MapStream(function(){}))` so i manually added `.map` to `CsvToJson` and `JsonParserStream` behind the scene.
+
+```javascript
+import { CsvToJson, Logger } from './torn.js'
+
+async function main() {
+
+  const url = './data/Tracks.csv'
+  const res = await fetch(url)
+
+  res.body
+    .pipeThrough(new CsvToJson())
+    .map(({ Name, UnitPrice }) => {
+      const price = parseFloat(UnitPrice);
+      return { name: Name, price }
+    })
+    .pipeTo(new Logger())
+
+}
+
+main().catch(err => {
+  console.log('we go ERROR:', err)
+})
+```
+<img src="https://github.com/tashimato/tf-images/blob/master/torn%20images/MapStream-example-map.png?raw=true" width="700">
+
+ <b>WARNING⛔⛔:</b> <u>`.map` doesn't exist on ReadableStreams by default</u> and you can't say: `stream.map()`. it's only on `CsvToJson` and `JsonParserStream`, because I manually added to them for more simplicity and readability.
+
+ ```javascript
+import { Logger } from './torn.js'
+
+async function main() {
+
+  const url = './data/text1.txt'
+  const res = await fetch(url)
+
+  res.body
+    .pipeThrough(new TextEncoderStream()) //javascript default TextEncoderStream
+    .map(data => data.length)
+    .pipeThrough(Logger)
+
+  //⛔⛔⛔ TypeError: res.body.pipeThrough(...).map is not a function
+
+}
+
+main().catch(err => {
+  console.log('we go ERROR:', err)
+})
+ ```
+
+
 ### Working with `StreamFormData`
 
 ```javascript
@@ -383,4 +512,4 @@ To be honest, it's more like a experimental module for `TransformStream` 🤔. J
 </div>
 
 ### License
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/tashimato/Torn/blob/main/LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

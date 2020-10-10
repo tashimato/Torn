@@ -1,17 +1,18 @@
 import { asyncIter } from '../utils/stream-utils.js'
 
-class Iter extends TransformStream {
-  constructor () {
+class MapStream extends TransformStream {
+  constructor (fn) {
     super({
       async transform (chunk, controller) {
         chunk = await chunk
         if (chunk === null) controller.terminate()
-        controller.enqueue(chunk)
+        // fn may be async
+        const data = await Promise.resolve(fn(chunk))
+        controller.enqueue(data)
       }
     })
-
     this.readable[Symbol.asyncIterator] = asyncIter
   }
 }
 
-export { Iter }
+export { MapStream }

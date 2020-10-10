@@ -2,17 +2,17 @@
 
 class BurgerStream {
   constructor ({ head, tail, separator }) {
-    this.head = head
-    this.tail = tail
-    this.separator = separator
-    this.streams = []
+    this._head = head
+    this._tail = tail
+    this._separator = separator
+    this._streams = []
   }
 
   add (stream) {
     if (!(stream instanceof ReadableStream)) {
       throw new Error('the input must be a ReadableStream')
     }
-    this.streams.push(stream)
+    this._streams.push(stream)
 
     return this
   }
@@ -23,7 +23,7 @@ class BurgerStream {
   serve () {
     const { writable, readable } = new TransformStream()
 
-    multiWriter(writable, this.streams, { head: this.head, tail: this.tail, separator: this.separator })
+    multiWriter(writable, this._streams, { head: this._head, tail: this._tail, separator: this._separator })
 
     return readable
   }
@@ -65,17 +65,17 @@ async function multiWriter (writable, streams, opt) {
 
 class CheeseBurgerStream {
   constructor ({ head, tail, separator }) {
-    this.head = head
-    this.tail = tail
-    this.separator = separator
-    this.streams = []
+    this._head = head
+    this._tail = tail
+    this._separator = separator
+    this._streams = []
   }
 
   add (stream, extra) {
     if (!(stream instanceof ReadableStream)) {
       throw new Error('the input must be a ReadableStream')
     }
-    this.streams.push({ stream, extra })
+    this._streams.push({ stream, extra })
 
     return this
   }
@@ -86,7 +86,7 @@ class CheeseBurgerStream {
   serve () {
     const { writable, readable } = new TransformStream()
 
-    extraMultiWriter(writable, this.streams, { head: this.head, tail: this.tail, separator: this.separator })
+    extraMultiWriter(writable, this._streams, { head: this._head, tail: this._tail, separator: this._separator })
 
     return readable
   }

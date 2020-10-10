@@ -1,6 +1,6 @@
 function jsonParser (json = '') {
   const length = json.length
-  let start = false; let dept = 0; let escape = false; let faze = 0; let obj = ''; const items = []
+  let start = false; let dept = 0; let escape = false; let faze = false; let obj = ''; const items = []
   for (let i = 0; i < length; i++) {
     const char = json[i]
 
@@ -14,19 +14,14 @@ function jsonParser (json = '') {
     }
 
     if (char === '"') {
-      if (faze === 1) {
+      if (faze) {
         obj += char
-        faze = 0
+        faze = false
         continue
       }
       escape = !escape
-    }
-
-    if (char === '\\') {
-      faze = (faze === 1) ? 0 : 1
-      // if (faze === 1) { faze = 0 } else { faze = 1 }
-    } else if (faze === 1) {
-      faze = 0
+      obj += char
+      continue
     }
 
     if (char === '}') {
@@ -41,6 +36,12 @@ function jsonParser (json = '') {
         // escape = false
       }
       continue
+    }
+
+    if (char === '\\') {
+      faze = !faze
+    } else if (faze) {
+      faze = false
     }
 
     if (start) { obj += char }

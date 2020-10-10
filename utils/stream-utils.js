@@ -1,3 +1,5 @@
+import { MapStream } from '../streams/map-stream.js'
+
 async function * asyncIter () {
   const reader = this.getReader()
   while (true) {
@@ -7,4 +9,8 @@ async function * asyncIter () {
   }
 }
 
-export default asyncIter
+function streamMap (fn) {
+  return this.pipeThrough(new MapStream(fn))
+}
+
+export { asyncIter, streamMap }

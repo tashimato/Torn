@@ -11,14 +11,14 @@ class StreamFormData {
   #form;
   #active;
 
-  constructor() {
+  constructor () {
     this.#form = {}
     this.#active = false
   }
 
-  append(key, value, filename) {
+  append (key, value, filename) {
     if (this.#active) {
-      throw new Error("FormData is Active! You cannot appent data to this FormData anymore")
+      throw new Error('FormData is Active! You cannot appent data to this FormData anymore')
     }
 
     if (typeof key !== 'string') {
@@ -46,9 +46,9 @@ class StreamFormData {
     })
   }
 
-  delete(key) {
+  delete (key) {
     if (this.#active) {
-      throw new Error("FormData is Active! You cannot delete data in this FormData anymore")
+      throw new Error('FormData is Active! You cannot delete data in this FormData anymore')
     }
 
     if (typeof key !== 'string') {
@@ -61,7 +61,7 @@ class StreamFormData {
     delete this.#form[key]
   }
 
-  * entries() {
+  * entries () {
     for (const key of Object.keys(this.#form)) {
       for (const obj of this.#form[key]) {
         yield [key, obj.value]
@@ -69,7 +69,7 @@ class StreamFormData {
     }
   }
 
-  get(key) {
+  get (key) {
     if (typeof key !== 'string') {
       throw new Error('the key be a string')
     }
@@ -79,7 +79,7 @@ class StreamFormData {
     return this.#form[key][0].value
   }
 
-  getAll(key) {
+  getAll (key) {
     if (typeof key !== 'string') {
       throw new Error('the key be a string')
     }
@@ -89,7 +89,7 @@ class StreamFormData {
     return this.#form[key].map(obj => obj.value)
   }
 
-  has(key) {
+  has (key) {
     if (typeof key !== 'string') {
       throw new Error('the key be a string')
     }
@@ -100,15 +100,15 @@ class StreamFormData {
     }
   }
 
-  * keys() {
+  * keys () {
     for (const key of Object.keys(this.#form)) {
       yield key
     }
   }
 
-  set(key, value, filename) {
+  set (key, value, filename) {
     if (this.#active) {
-      throw new Error("FormData is Active! You cannot set data to this FormData anymore")
+      throw new Error('FormData is Active! You cannot set data to this FormData anymore')
     }
 
     if (typeof key !== 'string') {
@@ -133,7 +133,7 @@ class StreamFormData {
     })
   }
 
-  * values() {
+  * values () {
     for (const arr of Object.values(this.#form)) {
       for (const obj of arr) {
         yield obj.value
@@ -141,11 +141,11 @@ class StreamFormData {
     }
   }
 
-  config() {
+  config () {
     if (this.#active) {
-      throw new Error("this FormData is already active!")
+      throw new Error('this FormData is already active!')
     }
-    this.#active = true;
+    this.#active = true
     // create boundry:
     // [...Array(10)].map(i=>((Math.random()*36) | 0).toString(36)).join('')
     // OR
@@ -183,35 +183,30 @@ class StreamFormData {
   }
 }
 
-function makePayload(name, data, filename) {
+function makePayload (name, data, filename) {
   const CRNL = '\r\n'
   let payload = `Content-Disposition: form-data; name="${name.replace(/"/g, '%22')}"`
-
 
   // filename
   if (filename) {
     payload += `;filename="${filename.replace(/"/g, '%22')}"`
-  }
-  else if (data instanceof Blob) {
+  } else if (data instanceof Blob) {
     if (data.name) {
       payload += `;filename="${data.name.replace(/"/g, '%22')}"`
-    }
-    else if (data.type) {
-      const ext = mimeToExt(data.type);
-      if (typeof ext !== 'undefined')
-        payload += `;filename="${Math.random().toString(36).substring(2)}.${ext}"`
+    } else if (data.type) {
+      const ext = mimeToExt(data.type)
+      if (typeof ext !== 'undefined') { payload += `;filename="${Math.random().toString(36).substring(2)}.${ext}"` }
     }
   }
 
-  //content-type
+  // content-type
   if (data instanceof Blob || data instanceof ReadableStream) {
     let contentType
     if (data.type) {
       contentType = data.type
     } else if (filename) {
       const mime = extToMime(filename.split('.').pop())
-      if (typeof mime !== 'undefined')
-        contentType = mime
+      if (typeof mime !== 'undefined') { contentType = mime }
     }
     if (!contentType) {
       contentType = 'application/octet-stream'

@@ -2,50 +2,56 @@ function csvRows (csv = '', options = {}) {
   const { delimiter = ',', escape = '"' } = options
 
   const length = csv.length
-  let token = ''; const rows = []; let row = []; let escaping = false; let faze = 0; const endline = '\n'; let partial = ''
+  let token = ''; const rows = []; let row = []; let escaping = false; let faze = false; const endline = '\n'; let partial = ''; let reachChar = false; let hadEscape = false
 
   for (let i = 0; i < length; i++) {
     const char = csv[i]
 
     partial += char
 
-    if (faze === 1) {
-      if (char === escape) {
-        token += char
-        faze = 0
-        continue
-      } else {
-        escaping = false
-        faze = 0
-      }
-    }
-
     if (char === escape) {
-      if (escaping === true) {
-        faze = 1
+      if (escaping) {
+        if (faze) {
+          token += escape
+          faze = false
+        } else {
+          faze = true
+        }
         continue
       }
       escaping = true
       continue
+    } else if (faze) {
+      escaping = false
+      faze = false
+      hadEscape = true
     }
 
-    if (escaping === true) {
-      token += char
-    } else {
-      if (char === delimiter) {
-        row.push(token)
+    switch (char) {
+      case delimiter:
+        row.push(hadEscape ? token : token.trimRight())
         token = ''
-      } else if (char === endline) {
-        row.push(token)
-        token = ''
+        reachChar = false
+        hadEscape = false
+        break
+      case endline:
+        row.push(hadEscape ? token : token.trimRight())
         rows.push(row)
+        token = ''
+        reachChar = false
+        hadEscape = false
         row = []
         partial = ''
         continue
-      } else {
-        if (char === ' ' || char === '\r') { continue }
+      case ' ':
+        if (reachChar) token += char
+        continue
+      case '\r':
+        continue
+      default:
         token += char
-      }
+        reachChar = true
+        break
     }
   }
 

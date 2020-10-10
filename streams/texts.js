@@ -1,18 +1,18 @@
-import asyncIter from '../utils/async-iter.js'
+import { asyncIter } from '../utils/stream-utils.js'
 
 class TxtDecoderStream extends TransformStream {
   constructor () {
     super({
       start () {
-        this.decoder = new TextDecoder('utf-8')
+        this._decoder = new TextDecoder('utf-8')
       },
       async transform (chunk, controller) {
         chunk = await chunk
         if (chunk === null) controller.terminate()
-        controller.enqueue(this.decoder.decode(chunk, { stream: true }))
+        controller.enqueue(this._decoder.decode(chunk, { stream: true }))
       },
       flush () {
-        this.decoder = null
+        this._decoder = null
       }
     })
 
@@ -24,15 +24,15 @@ class TxtEncoderStream extends TransformStream {
   constructor () {
     super({
       start () {
-        this.encoder = new TextEncoder()
+        this._encoder = new TextEncoder()
       },
       async transform (chunk, controller) {
         chunk = await chunk
         if (chunk === null) controller.terminate()
-        controller.enqueue(this.encoder.encode(chunk, { stream: true }))
+        controller.enqueue(this._encoder.encode(chunk, { stream: true }))
       },
       flush () {
-        this.encoder = null
+        this._encoder = null
       }
     })
 

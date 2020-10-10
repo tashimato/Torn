@@ -1,9 +1,9 @@
 import { readFile } from '../utils/promisify.js'
 
 class DataToUInt8Stream extends ReadableStream {
-  constructor(data) {
+  constructor (data) {
     super({
-      async start(controller) {
+      async start (controller) {
         if (data instanceof Blob) {
           if ('stream' in data) {
             const reader = data.stream().getReader()
@@ -11,7 +11,7 @@ class DataToUInt8Stream extends ReadableStream {
               const { done, value } = await reader.read()
               if (done) {
                 controller.close()
-                return;
+                return
               }
               controller.enqueue(value)
             }
